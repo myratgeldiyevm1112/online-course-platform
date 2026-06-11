@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Enum, String, Text
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -32,7 +32,11 @@ class InstructorProfileModel(BaseModel):
     __tablename__ = "instructor_profiles"
 
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, unique=True, index=True
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
     )
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
     expertise: Mapped[str | None] = mapped_column(String(500), nullable=True)
@@ -48,7 +52,11 @@ class StudentProfileModel(BaseModel):
     __tablename__ = "student_profiles"
 
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, unique=True, index=True
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
     )
     total_enrolled: Mapped[int] = mapped_column(default=0, nullable=False)
     total_completed: Mapped[int] = mapped_column(default=0, nullable=False)
