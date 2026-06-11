@@ -1,9 +1,12 @@
-import uuid
-
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.schemas.auth import (
+    LoginRequest,
+    RefreshRequest,
+    RegisterRequest,
+    TokenResponse,
+)
 from app.application.services.auth_service import AuthService
 from app.core.deps import get_current_user
 from app.core.exceptions import (
@@ -21,25 +24,6 @@ from app.infrastructure.redis.client import get_redis
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-# --- Schemas ---
-class RegisterRequest(BaseModel):
-    email: EmailStr
-    password: str
-
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
-
-class RefreshRequest(BaseModel):
-    refresh_token: str
-
-class TokenResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str
-
-
-# --- Endpoints ---
 @router.post("/register", response_model=TokenResponse, status_code=201)
 async def register(
     body: RegisterRequest,
@@ -84,6 +68,5 @@ async def logout(
     current_user: User = Depends(get_current_user),
     redis=Depends(get_redis),
 ):
-    from app.infrastructure.db.session import async_session_factory
     service = AuthService(None, redis)
     await service.logout(current_user.id)
