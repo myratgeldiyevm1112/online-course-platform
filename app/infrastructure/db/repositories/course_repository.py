@@ -1,11 +1,16 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.entities.course import Category, Course, CourseStatus, DifficultyLevel, LessonType
-from app.domain.interfaces.course_repository import AbstractCategoryRepository, AbstractCourseRepository
+from app.domain.entities.course import Category, Course
+from app.domain.interfaces.course_repository import (
+    AbstractCategoryRepository,
+    AbstractCourseRepository,
+    CourseFilters,
+    PaginatedCourses,
+)
 from app.infrastructure.db.models.course import CategoryModel, CourseModel
 
 
@@ -75,6 +80,7 @@ class SQLAlchemyCourseRepository(AbstractCourseRepository):
         model.category_id = course.category_id
         model.is_featured = course.is_featured
         model.deleted_at = course.deleted_at
+        model.total_lessons = course.total_lessons
         await self.session.flush()
         await self.session.refresh(model)
         return self._to_entity(model)
@@ -95,6 +101,53 @@ class SQLAlchemyCourseRepository(AbstractCourseRepository):
             )
         )
         return [self._to_entity(m) for m in result.scalars().all()]
+
+    async def list_published(self, filters: CourseFilters) -> PaginatedCourses:
+        stmt = select(CourseModel).where(
+            CourseModel.status == "published",
+            CourseModel.deleted_at.is_(None),
+        )
+
+        if filters.query:
+            stmt = stmt.where(
+                text("search_vector @@ plainto_tsquery('english', :q)").bindparams(q=filters.query)
+            )
+        if filters.category_slug:
+            stmt = stmt.join(CategoryModel).where(
+                CategoryModel.slug == filters.category_slug
+            )
+        if filters.min_price is not None:
+            stmt = stmt.where(CourseModel.price >= filters.min_price)
+        if filters.max_price is not None:
+            stmt = stmt.where(CourseModel.price <= filters.max_price)
+        if filters.min_rating is not None:
+            stmt = stmt.where(CourseModel.avg_rating >= filters.min_rating)
+        if filters.language:
+            stmt = stmt.where(CourseModel.language == filters.language)
+        if filters.difficulty:
+            stmt = stmt.where(CourseModel.difficulty == filters.difficulty)
+
+        sort_map = {
+            "newest": CourseModel.created_at.desc(),
+            "rating": CourseModel.avg_rating.desc(),
+            "enrolled": CourseModel.total_enrolled.desc(),
+            "price_asc": CourseModel.price.asc(),
+            "price_desc": CourseModel.price.desc(),
+        }
+        stmt = stmt.order_by(sort_map.get(filters.sort, CourseModel.created_at.desc()))
+
+        total_result = await self.session.execute(
+            select(func.count()).select_from(stmt.subquery())
+        )
+        total = total_result.scalar()
+
+        offset = (filters.page - 1) * filters.page_size
+        stmt = stmt.offset(offset).limit(filters.page_size)
+
+        result = await self.session.execute(stmt)
+        items = [self._to_entity(m) for m in result.scalars().all()]
+
+        return PaginatedCourses(items=items, total=total, page=filters.page, page_size=filters.page_size)
 
     @staticmethod
     def _to_entity(model: CourseModel) -> Course:

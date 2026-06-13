@@ -46,3 +46,23 @@ class CourseResponse(BaseModel):
 class CourseListResponse(BaseModel):
     items: list[CourseResponse]
     total: int
+
+
+class CourseFilterParams(BaseModel):
+    q: str | None = None
+    category: str | None = None
+    min_price: float | None = None
+    max_price: float | None = None
+    min_rating: float | None = None
+    language: str | None = None
+    difficulty: str | None = None
+    sort: str = "newest"
+    page: int = Field(1, ge=1)
+    page_size: int = Field(20, ge=1, le=100)
+
+
+class PaginatedCoursesResponse(BaseModel):
+    items: list[CourseResponse]
+    total: int
+    page: int
+    page_size: int

@@ -1,7 +1,30 @@
 import uuid
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 
 from app.domain.entities.course import Category, Course
+
+
+@dataclass
+class CourseFilters:
+    query: str | None = None
+    category_slug: str | None = None
+    min_price: float | None = None
+    max_price: float | None = None
+    min_rating: float | None = None
+    language: str | None = None
+    difficulty: str | None = None
+    sort: str = "newest"  # newest | rating | enrolled | price_asc | price_desc
+    page: int = 1
+    page_size: int = 20
+
+
+@dataclass
+class PaginatedCourses:
+    items: list[Course]
+    total: int
+    page: int
+    page_size: int
 
 
 class AbstractCourseRepository(ABC):
@@ -28,6 +51,10 @@ class AbstractCourseRepository(ABC):
 
     @abstractmethod
     async def list_by_instructor(self, instructor_id: uuid.UUID) -> list[Course]:
+        ...
+
+    @abstractmethod
+    async def list_published(self, filters: CourseFilters) -> PaginatedCourses:
         ...
 
 

@@ -1,12 +1,13 @@
 import uuid as uuid_lib
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.schemas.course import (
     CourseListResponse,
     CourseResponse,
     CreateCourseRequest,
+    PaginatedCoursesResponse,
     UpdateCourseRequest,
 )
 from app.application.services.course_service import CourseService
@@ -14,6 +15,7 @@ from app.core.deps import get_current_user, require_role
 from app.core.exceptions import raise_400, raise_403, raise_404
 from app.domain.entities.course import DifficultyLevel
 from app.domain.entities.user import User, UserRole
+from app.domain.interfaces.course_repository import CourseFilters
 from app.infrastructure.db.repositories.course_repository import (
     SQLAlchemyCategoryRepository,
     SQLAlchemyCourseRepository,
@@ -50,6 +52,59 @@ def _to_response(course) -> CourseResponse:
         avg_rating=course.avg_rating,
         total_enrolled=course.total_enrolled,
         is_featured=course.is_featured,
+    )
+
+
+@router.get("/categories/all", response_model=list[dict], tags=["Categories"])
+async def list_categories(db: AsyncSession = Depends(get_db)):
+    repo = SQLAlchemyCategoryRepository(db)
+    categories = await repo.list_all()
+    return [
+        {
+            "id": str(c.id),
+            "name": c.name,
+            "slug": c.slug,
+            "description": c.description,
+            "parent_id": str(c.parent_id) if c.parent_id else None,
+        }
+        for c in categories
+    ]
+
+
+@router.get("", response_model=PaginatedCoursesResponse)
+async def list_courses(
+    q: str | None = Query(None),
+    category: str | None = Query(None),
+    min_price: float | None = Query(None, ge=0),
+    max_price: float | None = Query(None, ge=0),
+    min_rating: float | None = Query(None, ge=0, le=5),
+    language: str | None = Query(None),
+    difficulty: str | None = Query(None),
+    sort: str = Query("newest"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    filters = CourseFilters(
+        query=q,
+        category_slug=category,
+        min_price=min_price,
+        max_price=max_price,
+        min_rating=min_rating,
+        language=language,
+        difficulty=difficulty,
+        sort=sort,
+        page=page,
+        page_size=page_size,
+    )
+    repo = SQLAlchemyCourseRepository(db)
+    result = await repo.list_published(filters)
+    return PaginatedCoursesResponse(
+        items=[_to_response(c) for c in result.items],
+        total=result.total,
+        page=result.page,
+        page_size=result.page_size,
     )
 
 
