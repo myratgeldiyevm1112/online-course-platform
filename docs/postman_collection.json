@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Online Course Platform API",
-    "description": "Production-grade course platform API collection with full Courses support",
+    "description": "Production-grade course platform API collection with full Courses, Sections, and Lessons support",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -27,6 +27,16 @@
     },
     {
       "key": "course_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "section_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lesson_id",
       "value": "",
       "type": "string"
     }
@@ -324,11 +334,131 @@
           }
         },
         {
+          "name": "Get Course Curriculum",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}/curriculum"
+          }
+        },
+        {
           "name": "Delete Course",
           "request": {
             "method": "DELETE",
             "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sections",
+      "item": [
+        {
+          "name": "Create Section",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) {",
+                  "  pm.collectionVariables.set('section_id', res.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{access_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Introduction to FastAPI\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Section",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{access_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}/sections/{{section_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Introduction to FastAPI (Updated)\",\n  \"position\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Section",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}/sections/{{section_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lessons",
+      "item": [
+        {
+          "name": "Create Lesson",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) {",
+                  "  pm.collectionVariables.set('lesson_id', res.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{access_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/api/v1/sections/{{section_id}}/lessons",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Your First API Endpoint\",\n  \"lesson_type\": \"article\",\n  \"article_body\": \"In this lesson, we will write our first async def main()...\",\n  \"is_preview\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Lesson",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{access_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/api/v1/sections/{{section_id}}/lessons/{{lesson_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Your First API Endpoint (Updated)\",\n  \"is_preview\": false,\n  \"position\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Lesson",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/sections/{{section_id}}/lessons/{{lesson_id}}"
           }
         }
       ]
