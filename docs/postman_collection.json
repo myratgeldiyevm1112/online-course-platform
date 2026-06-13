@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Online Course Platform API",
-    "description": "Production-grade course platform API collection",
+    "description": "Production-grade course platform API collection with full Courses support",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -22,6 +22,11 @@
     },
     {
       "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "course_id",
       "value": "",
       "type": "string"
     }
@@ -97,7 +102,7 @@
             "url": "{{base_url}}/api/v1/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\"email\": \"student@test.com\", \"password\": \"password123\"}"
+              "raw": "{\"email\": \"instructor@test.com\", \"password\": \"password123\"}"
             }
           }
         },
@@ -218,6 +223,112 @@
           "request": {
             "method": "GET",
             "url": "{{base_url}}/api/v1/users/{{user_id}}/public"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Create Course",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) {",
+                  "  pm.collectionVariables.set('course_id', res.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{access_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/api/v1/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced FastAPI Mastery\",\n  \"description\": \"Learn how to build production-ready applications with FastAPI, Tortoise ORM, and Docker.\",\n  \"short_description\": \"Complete production-grade course.\",\n  \"price\": 49.99,\n  \"category_id\": null,\n  \"language\": \"English\",\n  \"difficulty\": \"intermediate\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Courses (Instructor)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/courses/instructor/me"
+          }
+        },
+        {
+          "name": "Get Course by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}"
+          }
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{access_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced FastAPI Mastery (Updated)\",\n  \"price\": 59.99\n}"
+            }
+          }
+        },
+        {
+          "name": "Publish Course",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}/publish"
+          }
+        },
+        {
+          "name": "Unpublish Course",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}/unpublish"
+          }
+        },
+        {
+          "name": "Upload Course Thumbnail",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}/thumbnail",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Course",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}"
           }
         }
       ]
