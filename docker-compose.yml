@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - course_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U course_user -d course_db"]
       interval: 10s
@@ -23,7 +23,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - course_redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -41,7 +41,7 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - minio_data:/data
+      - course_minio_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -54,14 +54,14 @@ services:
     image: mailhog/mailhog:latest
     container_name: course-mailhog
     ports:
-      - "1025:1025"   # SMTP
-      - "8025:8025"   # Web UI
+      - "1025:1025"
+      - "8025:8025"
     restart: unless-stopped
 
 volumes:
-  postgres_data:
-  redis_data:
-  minio_data:
+  course_postgres_data:
+  course_redis_data:
+  course_minio_data:
 
 networks:
   default:
