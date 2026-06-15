@@ -16,7 +16,7 @@ if config.config_file_name is not None:
 
 # Импортируем Base — сюда потом добавим все модели
 from app.infrastructure.db.base import Base
-from app.infrastructure.db.models import user, course  # noqa: F401
+from app.infrastructure.db.models import user, course, media  # noqa: F401
 target_metadata = Base.metadata
 
 # Подставляем DATABASE_URL из .env
