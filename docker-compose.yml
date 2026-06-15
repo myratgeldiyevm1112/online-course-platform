@@ -57,6 +57,36 @@ services:
       - "1025:1025"
       - "8025:8025"
     restart: unless-stopped
+  celery-worker:
+    build: .
+    container_name: course-celery-worker
+    command: celery -A app.core.celery_app worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+
+  celery-beat:
+    build: .
+    container_name: course-celery-beat
+    command: celery -A app.core.celery_app beat --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  flower:
+    image: mher/flower
+    container_name: course-flower
+    command: celery --broker=redis://redis:6379/0 flower
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    restart: unless-stopped
 
 volumes:
   course_postgres_data:
