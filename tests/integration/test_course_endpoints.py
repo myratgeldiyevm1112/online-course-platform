@@ -141,3 +141,48 @@ class TestListCourses:
         )
         assert response.status_code == 200
         assert isinstance(response.json(), list)
+    
+    async def test_category_slug_courses(self, instructor_client, client, student_token):
+        create = await create_course_helper(instructor_client, title="Design Course")
+        course_id = create.json()["id"]
+        await add_lesson_helper(instructor_client, course_id)
+        await instructor_client.post(f"/api/v1/courses/{course_id}/publish")
+
+        cats = await client.get(
+            "/api/v1/courses/categories/all",
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+        slug = cats.json()[0]["slug"]
+
+        response = await client.get(
+            f"/api/v1/courses/categories/{slug}/courses",
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "items" in data
+        assert "total" in data
+
+    async def test_category_slug_courses(self, instructor_client, client, student_token):
+        """Курсы по slug категории — только опубликованные"""
+        create = await create_course_helper(instructor_client, title="Design Course")
+        course_id = create.json()["id"]
+        await add_lesson_helper(instructor_client, course_id)
+        await instructor_client.post(f"/api/v1/courses/{course_id}/publish")
+
+        response = await client.get(
+            "/api/v1/courses/categories/programming/courses",
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "items" in data
+        assert "total" in data
+
+    async def test_categories_cache(self, client, student_token):
+        headers = {"Authorization": f"Bearer {student_token}"}
+        r1 = await client.get("/api/v1/courses/categories/all", headers=headers)
+        r2 = await client.get("/api/v1/courses/categories/all", headers=headers)
+        assert r1.status_code == 200
+        assert r2.status_code == 200
+        assert r1.json() == r2.json()
