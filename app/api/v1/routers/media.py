@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.tasks.tasks import transcode_video
 from app.core.deps import get_current_user, require_role
 from app.core.exceptions import raise_400, raise_404
 from app.domain.entities.media import UploadStatus
@@ -91,10 +92,9 @@ async def confirm_upload(
 
     await repo.update_status(body.upload_id, UploadStatus.PROCESSING)
 
-    # Сохраняем статус в Redis (Celery задача обновит позже)
     await redis.set(f"upload:status:{body.upload_id}", UploadStatus.PROCESSING, ex=3600 * 24)
 
-    # TODO: Day 12 — здесь будет transcode_video.delay(upload_id)
+    transcode_video.delay(str(body.upload_id))
 
     return {"upload_id": str(body.upload_id), "status": UploadStatus.PROCESSING}
 
@@ -106,12 +106,10 @@ async def get_upload_status(
     redis=Depends(get_redis),
     current_user: User = Depends(get_current_user),
 ):
-    # Сначала смотрим в Redis
     cached = await redis.get(f"upload:status:{upload_id}")
     if cached:
         return MediaStatusResponse(upload_id=str(upload_id), status=cached)
 
-    # Если нет в Redis — берём из БД
     repo = SQLAlchemyMediaRepository(db)
     upload = await repo.get_by_id(upload_id)
     if not upload:
