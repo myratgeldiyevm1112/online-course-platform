@@ -1,3 +1,4 @@
+import uuid
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
@@ -8,6 +9,7 @@ from unittest.mock import AsyncMock
 from app.main import app
 from app.infrastructure.db.base import Base
 from app.infrastructure.db.models import user as _user_models  # noqa: F401
+from app.infrastructure.db.models import course as _course_models  # noqa: F401
 from app.infrastructure.db.session import get_db
 from app.infrastructure.redis.client import get_redis
 
@@ -68,3 +70,46 @@ async def client(db_session: AsyncSession, mock_redis: AsyncMock):
         yield ac
 
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def instructor_token(client: AsyncClient) -> str:
+    uid = uuid.uuid4().hex[:8]
+    email = f"instructor_{uid}@test.com"
+
+    await client.post(
+        "/api/v1/auth/register",
+        json={"email": email, "password": "password123"},
+    )
+    await client.post(
+        "/api/v1/users/me/instructor-apply",
+        headers={"Authorization": f"Bearer {(await client.post('/api/v1/auth/login', json={'email': email, 'password': 'password123'})).json()['access_token']}"},
+    )
+    login = await client.post(
+        "/api/v1/auth/login",
+        json={"email": email, "password": "password123"},
+    )
+    return login.json()["access_token"]
+
+
+@pytest_asyncio.fixture(scope="function")
+async def instructor_client(client: AsyncClient, instructor_token: str) -> AsyncClient:
+    client.headers.update({"Authorization": f"Bearer {instructor_token}"})
+    return client
+
+
+@pytest_asyncio.fixture(scope="function")
+async def student_token(client: AsyncClient) -> str:
+    uid = uuid.uuid4().hex[:8]
+    email = f"student_{uid}@test.com"
+    reg = await client.post(
+        "/api/v1/auth/register",
+        json={"email": email, "password": "password123"},
+    )
+    return reg.json()["access_token"]
+
+
+@pytest_asyncio.fixture(scope="function")
+async def student_client(client: AsyncClient, student_token: str) -> AsyncClient:
+    client.headers.update({"Authorization": f"Bearer {student_token}"})
+    return client

@@ -1,7 +1,9 @@
 import uuid as uuid_lib
+import json
 
 from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.infrastructure.redis.client import get_redis
 
 from app.api.v1.schemas.course import (
     CourseListResponse,
@@ -22,6 +24,9 @@ from app.infrastructure.db.repositories.course_repository import (
 )
 from app.infrastructure.db.session import get_db
 from app.infrastructure.storage.minio_client import ensure_buckets, upload_thumbnail
+
+CATEGORIES_CACHE_KEY = "categories:all"
+CATEGORIES_TTL = 60 * 10  # 10 минут
 
 router = APIRouter(prefix="/courses", tags=["Courses"])
 
@@ -56,10 +61,17 @@ def _to_response(course) -> CourseResponse:
 
 
 @router.get("/categories/all", response_model=list[dict], tags=["Categories"])
-async def list_categories(db: AsyncSession = Depends(get_db)):
+async def list_categories(
+    db: AsyncSession = Depends(get_db),
+    redis=Depends(get_redis),
+):
+    cached = await redis.get(CATEGORIES_CACHE_KEY)
+    if cached:
+        return json.loads(cached)
+
     repo = SQLAlchemyCategoryRepository(db)
     categories = await repo.list_all()
-    return [
+    data = [
         {
             "id": str(c.id),
             "name": c.name,
@@ -69,7 +81,32 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
         }
         for c in categories
     ]
+    await redis.set(CATEGORIES_CACHE_KEY, json.dumps(data), ex=CATEGORIES_TTL)
+    return data
 
+
+@router.get("/categories/{slug}/courses", response_model=PaginatedCoursesResponse, tags=["Categories"])
+async def list_courses_by_category(
+    slug: str,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    sort: str = Query("newest"),
+    db: AsyncSession = Depends(get_db),
+):
+    filters = CourseFilters(
+        category_slug=slug,
+        sort=sort,
+        page=page,
+        page_size=page_size,
+    )
+    repo = SQLAlchemyCourseRepository(db)
+    result = await repo.list_published(filters)
+    return PaginatedCoursesResponse(
+        items=[_to_response(c) for c in result.items],
+        total=result.total,
+        page=result.page,
+        page_size=result.page_size,
+    )
 
 @router.get("", response_model=PaginatedCoursesResponse)
 async def list_courses(
