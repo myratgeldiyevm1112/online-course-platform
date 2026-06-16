@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - course_postgres_data:/var/lib/postgresql/data
+      - course-postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U course_user -d course_db"]
       interval: 10s
@@ -23,7 +23,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - course_redis_data:/data
+      - course-redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -41,7 +41,7 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - course_minio_data:/data
+      - course-minio-data:/data
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -57,32 +57,53 @@ services:
       - "1025:1025"
       - "8025:8025"
     restart: unless-stopped
-    
+
   celery-worker:
     build: .
     container_name: course-celery-worker
     command: celery -A app.core.celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+asyncpg://course_user:course_pass@course-postgres:5432/course_db
+      REDIS_URL: redis://course-redis:6379/0
+      CELERY_BROKER_URL: redis://course-redis:6379/0
+      CELERY_RESULT_BACKEND: redis://course-redis:6379/0
+      MINIO_ENDPOINT: course-minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_SECURE: "false"
+      APP_SECRET_KEY: super-secret-key-change-in-production-min-32-chars
+      STRIPE_SECRET_KEY: sk_test_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_placeholder
     volumes:
       - .:/app
     depends_on:
-      - redis
-      - postgres
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
   celery-beat:
     build: .
     container_name: course-celery-beat
     command: celery -A app.core.celery_app beat --loglevel=info
+    environment:
+      CELERY_BROKER_URL: redis://course-redis:6379/0
+      CELERY_RESULT_BACKEND: redis://course-redis:6379/0
+      APP_SECRET_KEY: super-secret-key-change-in-production-min-32-chars
+      STRIPE_SECRET_KEY: sk_test_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_placeholder
     volumes:
       - .:/app
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
   flower:
     image: mher/flower
     container_name: course-flower
-    command: celery --broker=redis://redis:6379/0 flower
+    command: celery --broker=redis://course-redis:6379/0 flower
     ports:
       - "5555:5555"
     depends_on:
@@ -90,9 +111,12 @@ services:
     restart: unless-stopped
 
 volumes:
-  course_postgres_data:
-  course_redis_data:
-  course_minio_data:
+  course-postgres-data:
+    name: course-platform-postgres
+  course-redis-data:
+    name: course-platform-redis
+  course-minio-data:
+    name: course-platform-minio
 
 networks:
   default:
