@@ -195,3 +195,16 @@ class SQLAlchemyReviewRepository:
             .values(helpful_count=ReviewModel.helpful_count - 1)
         )
         await self.db.flush()
+    
+    async def list_by_instructor(self, instructor_id: uuid.UUID) -> list[Review]:
+        from app.infrastructure.db.models.course import CourseModel
+        result = await self.db.execute(
+            select(ReviewModel)
+            .join(CourseModel, ReviewModel.course_id == CourseModel.id)
+            .where(
+                CourseModel.instructor_id == instructor_id,
+                ReviewModel.is_hidden == False,  # noqa: E712
+            )
+            .order_by(ReviewModel.created_at.desc())
+        )
+        return [_to_entity(m) for m in result.scalars().all()]

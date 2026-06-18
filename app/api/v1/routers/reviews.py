@@ -207,3 +207,16 @@ async def toggle_helpful(
     else:
         await review_repo.add_helpful(rid, current_user.id)
         return {"helpful": True}
+
+
+@router.get("/instructors/me/reviews", response_model=list[ReviewResponse])
+async def get_instructor_reviews(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role not in (UserRole.INSTRUCTOR, UserRole.ADMIN):
+        raise_403("Instructor access required")
+
+    review_repo = SQLAlchemyReviewRepository(db)
+    reviews = await review_repo.list_by_instructor(current_user.id)
+    return [_fmt(r) for r in reviews]
