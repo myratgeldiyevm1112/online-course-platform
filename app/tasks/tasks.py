@@ -236,3 +236,9 @@ def cleanup_expired_uploads():
 def aggregate_analytics():
     logger.info("[aggregate_analytics] Running...")
     return {"status": "ok"}
+
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
+def generate_certificate(self, enrollment_id: str, student_id: str, course_id: str):
+    logger.info(f"[generate_certificate] enrollment_id={enrollment_id}")
+    # Week 6: реализация через ReportLab + MinIO
+    return {"status": "queued", "enrollment_id": enrollment_id}

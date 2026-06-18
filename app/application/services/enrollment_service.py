@@ -81,10 +81,10 @@ class EnrollmentService:
         return round(completed / course.total_lessons * 100, 1)
 
     async def mark_lesson_complete(
-        self, student_id: uuid.UUID, lesson_id: uuid.UUID,
-        section_repo: SQLAlchemySectionRepository,
-        lesson_repo: SQLAlchemyLessonRepository,
-    ):
+    self, student_id: uuid.UUID, lesson_id: uuid.UUID,
+    section_repo: SQLAlchemySectionRepository,
+    lesson_repo: SQLAlchemyLessonRepository,
+):
         lesson = await lesson_repo.get_by_id(lesson_id)
         if not lesson:
             raise ValueError("Lesson not found")
@@ -96,7 +96,23 @@ class EnrollmentService:
         if not enrollment or not enrollment.is_active:
             raise PermissionError("Not enrolled in this course")
 
-        return await self.progress_repo.mark_completed(enrollment.id, lesson_id)
+        progress = await self.progress_repo.mark_completed(enrollment.id, lesson_id)
+
+        # Completion check → trigger certificate task
+        course = await self.course_repo.get_by_id(section.course_id)
+        if course and course.total_lessons > 0:
+            all_progress = await self.progress_repo.list_by_enrollment(enrollment.id)
+            completed_count = sum(1 for p in all_progress if p.is_completed)
+            if completed_count >= course.total_lessons:
+                from app.tasks.tasks import generate_certificate
+                generate_certificate.delay(
+                    enrollment_id=str(enrollment.id),
+                    student_id=str(student_id),
+                    course_id=str(section.course_id),
+                )
+
+        return progress
+
 
     async def is_enrolled(
         self, student_id: uuid.UUID, course_id: uuid.UUID
