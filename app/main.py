@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.routers import auth, users, courses, sections, media, attachments, enrollment, payments, reviews, search
+from app.api.v1.routers import auth, users, courses, sections, media, attachments, enrollment, payments, reviews, search, notifications
 from app.core.config import settings
 
 app = FastAPI(
@@ -30,6 +30,7 @@ app.include_router(enrollment.router, prefix="/api/v1")
 app.include_router(payments.router, prefix="/api/v1")
 app.include_router(reviews.router, prefix="/api/v1")
 app.include_router(search.router, prefix="/api/v1")
+app.include_router(notifications.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])
