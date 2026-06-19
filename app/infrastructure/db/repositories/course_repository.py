@@ -280,3 +280,43 @@ class SQLAlchemyCategoryRepository(AbstractCategoryRepository):
             }
             for r in rows
         ]
+        
+    async def get_similar(self, course_id: uuid.UUID, category_id: uuid.UUID | None, limit: int = 10) -> list[Course]:
+        stmt = select(CourseModel).where(
+            CourseModel.status == "published",
+            CourseModel.deleted_at.is_(None),
+            CourseModel.id != course_id,
+        )
+        if category_id:
+            stmt = stmt.where(CourseModel.category_id == category_id)
+        stmt = stmt.order_by(CourseModel.total_enrolled.desc()).limit(limit)
+        result = await self.session.execute(stmt)
+        return [self._to_entity(m) for m in result.scalars().all()]
+
+    async def get_recommended(self, student_id: uuid.UUID, enrolled_course_ids: list[uuid.UUID], category_ids: list[uuid.UUID], limit: int = 10) -> list[Course]:
+        if not category_ids:
+            # fallback — top rated published
+            stmt = select(CourseModel).where(
+                CourseModel.status == "published",
+                CourseModel.deleted_at.is_(None),
+                CourseModel.id.not_in(enrolled_course_ids) if enrolled_course_ids else True,
+            ).order_by(CourseModel.avg_rating.desc()).limit(limit)
+        else:
+            stmt = select(CourseModel).where(
+                CourseModel.status == "published",
+                CourseModel.deleted_at.is_(None),
+                CourseModel.category_id.in_(category_ids),
+                CourseModel.id.not_in(enrolled_course_ids) if enrolled_course_ids else True,
+            ).order_by(CourseModel.avg_rating.desc()).limit(limit)
+        result = await self.session.execute(stmt)
+        return [self._to_entity(m) for m in result.scalars().all()]
+
+    async def get_featured(self, limit: int = 20) -> list[Course]:
+        result = await self.session.execute(
+            select(CourseModel).where(
+                CourseModel.is_featured == True,  # noqa: E712
+                CourseModel.status == "published",
+                CourseModel.deleted_at.is_(None),
+            ).order_by(CourseModel.total_enrolled.desc()).limit(limit)
+        )
+        return [self._to_entity(m) for m in result.scalars().all()]

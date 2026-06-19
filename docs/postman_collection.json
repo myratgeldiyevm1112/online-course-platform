@@ -1,21 +1,70 @@
 {
   "info": {
     "name": "Online Course Platform API",
-    "description": "Production-grade course platform API — full collection",
+    "description": "Production-grade course platform API \u2014 full collection",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {"key": "base_url", "value": "http://127.0.0.1:8000", "type": "string"},
-    {"key": "access_token", "value": "", "type": "string"},
-    {"key": "refresh_token", "value": "", "type": "string"},
-    {"key": "user_id", "value": "", "type": "string"},
-    {"key": "course_id", "value": "", "type": "string"},
-    {"key": "section_id", "value": "", "type": "string"},
-    {"key": "lesson_id", "value": "", "type": "string"},
-    {"key": "upload_id", "value": "", "type": "string"},
-    {"key": "attachment_id", "value": "", "type": "string"},
-    {"key": "enrollment_id", "value": "", "type": "string"},
-    {"key": "review_id", "value": "", "type": "string"}
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "course_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "section_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lesson_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "upload_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "attachment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "enrollment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "review_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "category_slug",
+      "value": "programming",
+      "type": "string"
+    }
   ],
   "item": [
     {
@@ -23,11 +72,17 @@
       "item": [
         {
           "name": "Liveness",
-          "request": {"method": "GET", "url": "{{base_url}}/health"}
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health"
+          }
         },
         {
           "name": "Readiness",
-          "request": {"method": "GET", "url": "{{base_url}}/health/ready"}
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health/ready"
+          }
         }
       ]
     },
@@ -36,57 +91,107 @@
       "item": [
         {
           "name": "Register",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.access_token) {",
-            "  pm.collectionVariables.set('access_token', res.access_token);",
-            "  pm.collectionVariables.set('refresh_token', res.refresh_token);",
-            "}"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.access_token) {",
+                  "  pm.collectionVariables.set('access_token', res.access_token);",
+                  "  pm.collectionVariables.set('refresh_token', res.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{base_url}}/api/v1/auth/register",
-            "body": {"mode": "raw", "raw": "{\"email\": \"student@test.com\", \"password\": \"password123\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"student@test.com\", \"password\": \"password123\"}"
+            }
           }
         },
         {
           "name": "Login",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.access_token) {",
-            "  pm.collectionVariables.set('access_token', res.access_token);",
-            "  pm.collectionVariables.set('refresh_token', res.refresh_token);",
-            "}"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.access_token) {",
+                  "  pm.collectionVariables.set('access_token', res.access_token);",
+                  "  pm.collectionVariables.set('refresh_token', res.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{base_url}}/api/v1/auth/login",
-            "body": {"mode": "raw", "raw": "{\"email\": \"instructor@test.com\", \"password\": \"password123\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"instructor@test.com\", \"password\": \"password123\"}"
+            }
           }
         },
         {
           "name": "Refresh Token",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.access_token) {",
-            "  pm.collectionVariables.set('access_token', res.access_token);",
-            "  pm.collectionVariables.set('refresh_token', res.refresh_token);",
-            "}"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.access_token) {",
+                  "  pm.collectionVariables.set('access_token', res.access_token);",
+                  "  pm.collectionVariables.set('refresh_token', res.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{base_url}}/api/v1/auth/refresh",
-            "body": {"mode": "raw", "raw": "{\"refresh_token\": \"{{refresh_token}}\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refresh_token\": \"{{refresh_token}}\"}"
+            }
           }
         },
         {
           "name": "Logout",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/auth/logout"
           }
         }
@@ -97,13 +202,25 @@
       "item": [
         {
           "name": "Get My Profile",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.id) { pm.collectionVariables.set('user_id', res.id); }"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('user_id', res.id); }"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/users/me"
           }
         },
@@ -112,20 +229,43 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/users/me",
-            "body": {"mode": "raw", "raw": "{\"bio\": \"I teach Python\", \"expertise\": \"Python, FastAPI\", \"website\": \"https://mysite.com\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"bio\": \"I teach Python\", \"expertise\": \"Python, FastAPI\", \"website\": \"https://mysite.com\"}"
+            }
           }
         },
         {
           "name": "Upload Avatar",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/users/me/avatar",
-            "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": ""}]}
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
           }
         },
         {
@@ -133,18 +273,32 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/users/me/change-password",
-            "body": {"mode": "raw", "raw": "{\"old_password\": \"password123\", \"new_password\": \"newpassword456\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"old_password\": \"password123\", \"new_password\": \"newpassword456\"}"
+            }
           }
         },
         {
           "name": "Apply for Instructor",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/users/me/instructor-apply"
           }
         },
@@ -167,41 +321,98 @@
             "url": {
               "raw": "{{base_url}}/api/v1/courses?q=&sort=newest&page=1&page_size=20",
               "query": [
-                {"key": "q", "value": ""},
-                {"key": "category", "value": "", "disabled": true},
-                {"key": "min_price", "value": "", "disabled": true},
-                {"key": "max_price", "value": "", "disabled": true},
-                {"key": "min_rating", "value": "", "disabled": true},
-                {"key": "language", "value": "", "disabled": true},
-                {"key": "difficulty", "value": "", "disabled": true},
-                {"key": "sort", "value": "newest"},
-                {"key": "page", "value": "1"},
-                {"key": "page_size", "value": "20"}
+                {
+                  "key": "q",
+                  "value": ""
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "min_price",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "max_price",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "min_rating",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "language",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "difficulty",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "newest"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
               ]
             }
           }
         },
         {
           "name": "Create Course",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.id) { pm.collectionVariables.set('course_id', res.id); }"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('course_id', res.id); }"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/courses",
-            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Advanced FastAPI Mastery\",\n  \"description\": \"Learn how to build production-ready applications with FastAPI, SQLAlchemy, and Docker.\",\n  \"short_description\": \"Complete production-grade course.\",\n  \"price\": 49.99,\n  \"category_id\": null,\n  \"language\": \"English\",\n  \"difficulty\": \"intermediate\"\n}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced FastAPI Mastery\",\n  \"description\": \"Learn how to build production-ready applications with FastAPI, SQLAlchemy, and Docker.\",\n  \"short_description\": \"Complete production-grade course.\",\n  \"price\": 49.99,\n  \"category_id\": null,\n  \"language\": \"English\",\n  \"difficulty\": \"intermediate\"\n}"
+            }
           }
         },
         {
           "name": "Get My Courses (Instructor)",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/instructor/me"
           }
         },
@@ -209,7 +420,12 @@
           "name": "Get Course by ID",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}"
           }
         },
@@ -218,18 +434,32 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}",
-            "body": {"mode": "raw", "raw": "{\"title\": \"Advanced FastAPI Mastery (Updated)\", \"price\": 59.99}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Advanced FastAPI Mastery (Updated)\", \"price\": 59.99}"
+            }
           }
         },
         {
           "name": "Delete Course",
           "request": {
             "method": "DELETE",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}"
           }
         },
@@ -237,7 +467,12 @@
           "name": "Publish Course",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/publish"
           }
         },
@@ -245,7 +480,12 @@
           "name": "Unpublish Course",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/unpublish"
           }
         },
@@ -253,9 +493,23 @@
           "name": "Upload Thumbnail",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/thumbnail",
-            "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": ""}]}
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
           }
         },
         {
@@ -279,18 +533,34 @@
       "item": [
         {
           "name": "Create Section",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.id) { pm.collectionVariables.set('section_id', res.id); }"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('section_id', res.id); }"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/sections",
-            "body": {"mode": "raw", "raw": "{\"title\": \"Introduction to FastAPI\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Introduction to FastAPI\"}"
+            }
           }
         },
         {
@@ -298,18 +568,32 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/sections/{{section_id}}",
-            "body": {"mode": "raw", "raw": "{\"title\": \"Introduction to FastAPI (Updated)\", \"position\": 1}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Introduction to FastAPI (Updated)\", \"position\": 1}"
+            }
           }
         },
         {
           "name": "Delete Section",
           "request": {
             "method": "DELETE",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/sections/{{section_id}}"
           }
         },
@@ -317,7 +601,12 @@
           "name": "Get Curriculum",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/curriculum"
           }
         }
@@ -328,18 +617,34 @@
       "item": [
         {
           "name": "Create Lesson",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.id) { pm.collectionVariables.set('lesson_id', res.id); }"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('lesson_id', res.id); }"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/sections/{{section_id}}/lessons",
-            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Your First API Endpoint\",\n  \"lesson_type\": \"article\",\n  \"article_body\": \"In this lesson we write our first async endpoint.\",\n  \"is_preview\": true\n}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Your First API Endpoint\",\n  \"lesson_type\": \"article\",\n  \"article_body\": \"In this lesson we write our first async endpoint.\",\n  \"is_preview\": true\n}"
+            }
           }
         },
         {
@@ -347,18 +652,32 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/sections/{{section_id}}/lessons/{{lesson_id}}",
-            "body": {"mode": "raw", "raw": "{\"title\": \"Your First API Endpoint (Updated)\", \"is_preview\": false}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Your First API Endpoint (Updated)\", \"is_preview\": false}"
+            }
           }
         },
         {
           "name": "Delete Lesson",
           "request": {
             "method": "DELETE",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/sections/{{section_id}}/lessons/{{lesson_id}}"
           }
         }
@@ -369,18 +688,34 @@
       "item": [
         {
           "name": "Get Upload URL",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.upload_id) { pm.collectionVariables.set('upload_id', res.upload_id); }"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.upload_id) { pm.collectionVariables.set('upload_id', res.upload_id); }"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/media/upload-url",
-            "body": {"mode": "raw", "raw": "{\"lesson_id\": \"{{lesson_id}}\", \"content_type\": \"video/mp4\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"lesson_id\": \"{{lesson_id}}\", \"content_type\": \"video/mp4\"}"
+            }
           }
         },
         {
@@ -388,18 +723,32 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/media/confirm-upload",
-            "body": {"mode": "raw", "raw": "{\"upload_id\": \"{{upload_id}}\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"upload_id\": \"{{upload_id}}\"}"
+            }
           }
         },
         {
           "name": "Get Upload Status",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/media/status/{{upload_id}}"
           }
         }
@@ -412,28 +761,59 @@
           "name": "Get Stream URL",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/lessons/{{lesson_id}}/stream"
           }
         },
         {
           "name": "Upload Attachment",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.id) { pm.collectionVariables.set('attachment_id', res.id); }"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('attachment_id', res.id); }"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/lessons/{{lesson_id}}/attachments",
-            "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": ""}]}
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
           }
         },
         {
           "name": "List Attachments",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/lessons/{{lesson_id}}/attachments"
           }
         },
@@ -441,7 +821,12 @@
           "name": "Download Attachment",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/attachments/{{attachment_id}}/download"
           }
         },
@@ -449,7 +834,12 @@
           "name": "Delete Attachment",
           "request": {
             "method": "DELETE",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/attachments/{{attachment_id}}"
           }
         }
@@ -463,11 +853,20 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/payments/checkout",
-            "body": {"mode": "raw", "raw": "{\"course_id\": \"{{course_id}}\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"course_id\": \"{{course_id}}\"}"
+            }
           }
         },
         {
@@ -475,18 +874,32 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"},
-              {"key": "Stripe-Signature", "value": "t=...,v1=..."}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Stripe-Signature",
+                "value": "t=...,v1=..."
+              }
             ],
             "url": "{{base_url}}/api/v1/payments/webhook",
-            "body": {"mode": "raw", "raw": "{}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
           }
         },
         {
           "name": "Payment History",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/payments/history"
           }
         },
@@ -494,7 +907,12 @@
           "name": "Instructor Earnings",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/payments/instructor/earnings"
           }
         }
@@ -505,13 +923,25 @@
       "item": [
         {
           "name": "Enroll Free Course",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.id) { pm.collectionVariables.set('enrollment_id', res.id); }"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('enrollment_id', res.id); }"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/enroll"
           }
         },
@@ -519,7 +949,12 @@
           "name": "Get My Enrolled Courses",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/enrollments/my"
           }
         },
@@ -527,7 +962,12 @@
           "name": "Get Enrollment Detail",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/enrollments/{{enrollment_id}}"
           }
         },
@@ -535,7 +975,12 @@
           "name": "Request Refund",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/enrollments/{{enrollment_id}}/refund"
           }
         },
@@ -543,7 +988,12 @@
           "name": "Mark Lesson Complete",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/lessons/{{lesson_id}}/complete"
           }
         },
@@ -551,10 +1001,20 @@
           "name": "Update Watch Progress (Heartbeat)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/v1/lessons/{{lesson_id}}/progress?watch_seconds=120",
-              "query": [{"key": "watch_seconds", "value": "120"}]
+              "query": [
+                {
+                  "key": "watch_seconds",
+                  "value": "120"
+                }
+              ]
             }
           }
         },
@@ -562,7 +1022,12 @@
           "name": "Get Course Progress",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/progress"
           }
         },
@@ -570,7 +1035,12 @@
           "name": "Resume Course (Last Watched Lesson)",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/resume"
           }
         }
@@ -581,18 +1051,34 @@
       "item": [
         {
           "name": "Submit Review",
-          "event": [{"listen": "test", "script": {"exec": [
-            "const res = pm.response.json();",
-            "if (res.id) { pm.collectionVariables.set('review_id', res.id); }"
-          ]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('review_id', res.id); }"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/courses/{{course_id}}/reviews",
-            "body": {"mode": "raw", "raw": "{\"rating\": 5, \"body\": \"Excellent course, highly recommend to everyone!\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"rating\": 5, \"body\": \"Excellent course, highly recommend to everyone!\"}"
+            }
           }
         },
         {
@@ -602,9 +1088,18 @@
             "url": {
               "raw": "{{base_url}}/api/v1/courses/{{course_id}}/reviews?sort=newest&offset=0&limit=20",
               "query": [
-                {"key": "sort", "value": "newest"},
-                {"key": "offset", "value": "0"},
-                {"key": "limit", "value": "20"}
+                {
+                  "key": "sort",
+                  "value": "newest"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
               ]
             }
           }
@@ -614,18 +1109,32 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/reviews/{{review_id}}",
-            "body": {"mode": "raw", "raw": "{\"rating\": 4, \"body\": \"Great course, updated my review after finishing.\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"rating\": 4, \"body\": \"Great course, updated my review after finishing.\"}"
+            }
           }
         },
         {
           "name": "Delete Review",
           "request": {
             "method": "DELETE",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/reviews/{{review_id}}"
           }
         },
@@ -634,18 +1143,32 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{access_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": "{{base_url}}/api/v1/reviews/{{review_id}}/respond",
-            "body": {"mode": "raw", "raw": "{\"body\": \"Thank you for your feedback! Glad you enjoyed the course.\"}"}
+            "body": {
+              "mode": "raw",
+              "raw": "{\"body\": \"Thank you for your feedback! Glad you enjoyed the course.\"}"
+            }
           }
         },
         {
           "name": "Toggle Helpful Vote",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/reviews/{{review_id}}/helpful"
           }
         },
@@ -653,7 +1176,12 @@
           "name": "Get Instructor Reviews",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/instructors/me/reviews"
           }
         }
@@ -663,35 +1191,66 @@
       "name": "Search",
       "item": [
         {
-          "name": "Search Courses",
+          "name": "Search Courses (FTS)",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/search?q=fastapi&sort=newest&page=1&page_size=20",
+              "raw": "{{base_url}}/api/v1/search?q=python&sort=newest&page=1&page_size=20",
               "query": [
-                {"key": "q", "value": "fastapi"},
-                {"key": "category", "value": "", "disabled": true},
-                {"key": "min_price", "value": "", "disabled": true},
-                {"key": "max_price", "value": "", "disabled": true},
-                {"key": "min_rating", "value": "", "disabled": true},
-                {"key": "language", "value": "", "disabled": true},
-                {"key": "difficulty", "value": "", "disabled": true},
-                {"key": "sort", "value": "newest"},
-                {"key": "page", "value": "1"},
-                {"key": "page_size", "value": "20"}
+                {
+                  "key": "q",
+                  "value": "python"
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "min_price",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "max_price",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "min_rating",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "level",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "newest"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
               ]
             }
           }
         },
         {
-          "name": "Get Trending Courses",
+          "name": "Trending Courses",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/api/v1/courses/trending"
           }
         },
         {
-          "name": "Get Categories",
+          "name": "Categories with Course Count (Tree)",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/api/v1/categories"
@@ -701,8 +1260,40 @@
           "name": "Reindex Search (Admin)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "url": "{{base_url}}/api/v1/admin/search/reindex"
+          }
+        },
+        {
+          "name": "Similar Courses",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/courses/{{course_id}}/similar"
+          }
+        },
+        {
+          "name": "Recommended Courses (Auth)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/courses/recommended"
+          }
+        },
+        {
+          "name": "Featured Courses",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/courses/featured"
           }
         }
       ]
