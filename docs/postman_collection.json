@@ -658,6 +658,54 @@
           }
         }
       ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Courses",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/search?q=fastapi&sort=newest&page=1&page_size=20",
+              "query": [
+                {"key": "q", "value": "fastapi"},
+                {"key": "category", "value": "", "disabled": true},
+                {"key": "min_price", "value": "", "disabled": true},
+                {"key": "max_price", "value": "", "disabled": true},
+                {"key": "min_rating", "value": "", "disabled": true},
+                {"key": "language", "value": "", "disabled": true},
+                {"key": "difficulty", "value": "", "disabled": true},
+                {"key": "sort", "value": "newest"},
+                {"key": "page", "value": "1"},
+                {"key": "page_size", "value": "20"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Trending Courses",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/courses/trending"
+          }
+        },
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/categories"
+          }
+        },
+        {
+          "name": "Reindex Search (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/admin/search/reindex"
+          }
+        }
+      ]
     }
   ]
 }

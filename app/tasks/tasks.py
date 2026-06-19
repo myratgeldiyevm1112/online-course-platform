@@ -242,3 +242,11 @@ def generate_certificate(self, enrollment_id: str, student_id: str, course_id: s
     logger.info(f"[generate_certificate] enrollment_id={enrollment_id}")
     # Week 6: реализация через ReportLab + MinIO
     return {"status": "queued", "enrollment_id": enrollment_id}
+
+@celery_app.task
+def update_trending_courses():
+    """Hourly: invalidate trending cache so next request refreshes from DB."""
+    r = _get_redis()
+    r.delete("courses:trending")
+    logger.info("[update_trending_courses] Cache invalidated")
+    return {"status": "ok"}

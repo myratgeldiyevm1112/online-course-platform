@@ -173,7 +173,34 @@ class SQLAlchemyCourseRepository(AbstractCourseRepository):
             updated_at=model.updated_at,
             deleted_at=model.deleted_at,
         )
+    async def get_trending(self, limit: int = 10) -> list[Course]:
+        """Top courses by enrollment in last 7 days via total_enrolled."""
+        from datetime import timedelta
+        from sqlalchemy import desc
+        cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+        result = await self.session.execute(
+            select(CourseModel)
+            .where(
+                CourseModel.status == "published",
+                CourseModel.deleted_at.is_(None),
+                CourseModel.updated_at >= cutoff,
+            )
+            .order_by(desc(CourseModel.total_enrolled))
+            .limit(limit)
+        )
+        return [self._to_entity(m) for m in result.scalars().all()]
 
+    async def reindex_search_vectors(self) -> int:
+        """Refresh tsvector column for all courses."""
+        result = await self.session.execute(
+            text("""
+                UPDATE courses
+                SET search_vector = to_tsvector('english', title || ' ' || description)
+                WHERE deleted_at IS NULL
+            """)
+        )
+        await self.session.flush()
+        return result.rowcount
 
 class SQLAlchemyCategoryRepository(AbstractCategoryRepository):
     def __init__(self, session: AsyncSession):
@@ -221,3 +248,35 @@ class SQLAlchemyCategoryRepository(AbstractCategoryRepository):
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
+    
+    async def list_with_course_count(self) -> list[dict]:
+        result = await self.session.execute(
+            select(
+                CategoryModel.id,
+                CategoryModel.name,
+                CategoryModel.slug,
+                CategoryModel.description,
+                CategoryModel.parent_id,
+                func.count(CourseModel.id).label("course_count"),
+            )
+            .outerjoin(
+                CourseModel,
+                (CourseModel.category_id == CategoryModel.id) &
+                (CourseModel.status == "published") &
+                (CourseModel.deleted_at.is_(None)),
+            )
+            .group_by(CategoryModel.id)
+            .order_by(CategoryModel.name)
+        )
+        rows = result.all()
+        return [
+            {
+                "id": str(r.id),
+                "name": r.name,
+                "slug": r.slug,
+                "description": r.description,
+                "parent_id": str(r.parent_id) if r.parent_id else None,
+                "course_count": r.course_count,
+            }
+            for r in rows
+        ]
