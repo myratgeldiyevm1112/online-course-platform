@@ -4,8 +4,9 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.schemas.review import (
-    ReviewCreate, ReviewUpdate, InstructorResponseCreate, ReviewResponse,
+    InstructorResponseCreate, ReviewCreate, ReviewResponse, ReviewUpdate,
 )
+from app.application.services.review_service import ReviewService
 from app.core.deps import get_current_user
 from app.core.exceptions import raise_400, raise_403, raise_404
 from app.domain.entities.user import User, UserRole
@@ -15,6 +16,14 @@ from app.infrastructure.db.repositories.review_repository import SQLAlchemyRevie
 from app.infrastructure.db.session import get_db
 
 router = APIRouter(tags=["Reviews"])
+
+
+def _get_service(db: AsyncSession) -> ReviewService:
+    return ReviewService(
+        SQLAlchemyReviewRepository(db),
+        SQLAlchemyEnrollmentRepository(db),
+        SQLAlchemyCourseRepository(db),
+    )
 
 
 def _fmt(review) -> ReviewResponse:
@@ -47,33 +56,18 @@ async def create_review(
     except ValueError:
         raise_400("Invalid course ID")
 
-    course_repo = SQLAlchemyCourseRepository(db)
-    course = await course_repo.get_by_id(cid)
-    if not course or not course.is_published:
-        raise_404("Course not found")
-
-    enrollment_repo = SQLAlchemyEnrollmentRepository(db)
-    enrollment = await enrollment_repo.get_by_student_and_course(current_user.id, cid)
-    if not enrollment or not enrollment.is_active:
-        raise_403("You must be enrolled to review this course")
-
-    review_repo = SQLAlchemyReviewRepository(db)
-    existing = await review_repo.get_by_student_and_course(current_user.id, cid)
-    if existing:
-        raise_400("You have already reviewed this course")
-
-    review = await review_repo.create(
-        course_id=cid,
-        student_id=current_user.id,
-        enrollment_id=enrollment.id,
-        rating=body.rating,
-        body=body.body,
-    )
-
-    # Recalc avg_rating on course
-    avg = await review_repo.recalc_avg_rating(cid)
-    course.avg_rating = avg
-    await course_repo.update(course)
+    service = _get_service(db)
+    try:
+        review = await service.submit_review(
+            student_id=current_user.id,
+            course_id=cid,
+            rating=body.rating,
+            body=body.body,
+        )
+    except ValueError as e:
+        raise_400(str(e))
+    except PermissionError as e:
+        raise_403(str(e))
 
     return _fmt(review)
 
@@ -108,21 +102,18 @@ async def update_review(
     except ValueError:
         raise_400("Invalid review ID")
 
-    review_repo = SQLAlchemyReviewRepository(db)
-    review = await review_repo.get_by_id(rid)
-    if not review:
-        raise_404("Review not found")
-    if review.student_id != current_user.id:
-        raise_403("Access denied")
-
-    updated = await review_repo.update(rid, rating=body.rating, body=body.body)
-
-    # Recalc avg_rating
-    course_repo = SQLAlchemyCourseRepository(db)
-    course = await course_repo.get_by_id(review.course_id)
-    if course:
-        course.avg_rating = await review_repo.recalc_avg_rating(review.course_id)
-        await course_repo.update(course)
+    service = _get_service(db)
+    try:
+        updated = await service.edit_review(
+            student_id=current_user.id,
+            review_id=rid,
+            rating=body.rating,
+            body=body.body,
+        )
+    except ValueError as e:
+        raise_404(str(e))
+    except PermissionError as e:
+        raise_403(str(e))
 
     return _fmt(updated)
 
@@ -138,21 +129,13 @@ async def delete_review(
     except ValueError:
         raise_400("Invalid review ID")
 
-    review_repo = SQLAlchemyReviewRepository(db)
-    review = await review_repo.get_by_id(rid)
-    if not review:
-        raise_404("Review not found")
-    if review.student_id != current_user.id:
-        raise_403("Access denied")
-
-    await review_repo.delete(rid)
-
-    # Recalc avg_rating
-    course_repo = SQLAlchemyCourseRepository(db)
-    course = await course_repo.get_by_id(review.course_id)
-    if course:
-        course.avg_rating = await review_repo.recalc_avg_rating(review.course_id)
-        await course_repo.update(course)
+    service = _get_service(db)
+    try:
+        await service.delete_review(student_id=current_user.id, review_id=rid)
+    except ValueError as e:
+        raise_404(str(e))
+    except PermissionError as e:
+        raise_403(str(e))
 
 
 @router.post("/reviews/{review_id}/respond", response_model=ReviewResponse)
@@ -172,7 +155,6 @@ async def instructor_respond(
     if not review:
         raise_404("Review not found")
 
-    # Verify instructor owns the course
     course_repo = SQLAlchemyCourseRepository(db)
     course = await course_repo.get_by_id(review.course_id)
     if not course or course.instructor_id != current_user.id:

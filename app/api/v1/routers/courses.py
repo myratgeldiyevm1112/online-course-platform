@@ -4,7 +4,7 @@ import json
 from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infrastructure.redis.client import get_redis
-
+from app.core.deps import get_current_user, require_role
 from app.api.v1.schemas.course import (
     CourseListResponse,
     CourseResponse,
@@ -13,7 +13,6 @@ from app.api.v1.schemas.course import (
     UpdateCourseRequest,
 )
 from app.application.services.course_service import CourseService
-from app.core.deps import get_current_user, require_role
 from app.core.exceptions import raise_400, raise_403, raise_404
 from app.domain.entities.course import DifficultyLevel
 from app.domain.entities.user import User, UserRole
@@ -324,3 +323,85 @@ async def upload_course_thumbnail(
     except PermissionError as e:
         raise_403(str(e))
     return _to_response(course)
+
+
+@router.get("/courses/{course_id}/similar", response_model=list[CourseResponse])
+async def get_similar_courses(
+    course_id: str,
+    db: AsyncSession = Depends(get_db),
+    redis=Depends(get_redis),
+):
+    import uuid as uuid_lib
+    from app.core.exceptions import raise_400, raise_404
+    try:
+        cid = uuid_lib.UUID(course_id)
+    except ValueError:
+        raise_400("Invalid course ID")
+
+    cache_key = f"courses:similar:{course_id}"
+    cached = await redis.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    repo = SQLAlchemyCourseRepository(db)
+    course = await repo.get_by_id(cid)
+    if not course:
+        raise_404("Course not found")
+
+    similar = await repo.get_similar(cid, course.category_id)
+    result = [_to_response(c) for c in similar]
+    await redis.setex(cache_key, 60 * 15, json.dumps([r.model_dump() for r in result]))
+    return result
+
+
+@router.get("/courses/recommended", response_model=list[CourseResponse])
+async def get_recommended_courses(
+    db: AsyncSession = Depends(get_db),
+    redis=Depends(get_redis),
+    current_user=Depends(get_current_user),
+):
+    cache_key = f"courses:recommended:{current_user.id}"
+    cached = await redis.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    from app.infrastructure.db.repositories.enrollment_repository import SQLAlchemyEnrollmentRepository
+    enrollment_repo = SQLAlchemyEnrollmentRepository(db)
+    enrollments = await enrollment_repo.list_by_student(current_user.id)
+
+    enrolled_course_ids = [e.course_id for e in enrollments]
+    repo = SQLAlchemyCourseRepository(db)
+
+    # Получаем категории enrolled курсов
+    category_ids = []
+    for e in enrollments:
+        course = await repo.get_by_id(e.course_id)
+        if course and course.category_id:
+            category_ids.append(course.category_id)
+    category_ids = list(set(category_ids))
+
+    courses = await repo.get_recommended(
+        student_id=current_user.id,
+        enrolled_course_ids=enrolled_course_ids,
+        category_ids=category_ids,
+    )
+    result = [_to_response(c) for c in courses]
+    await redis.setex(cache_key, 60 * 15, json.dumps([r.model_dump() for r in result]))
+    return result
+
+
+@router.get("/courses/featured", response_model=list[CourseResponse])
+async def get_featured_courses(
+    db: AsyncSession = Depends(get_db),
+    redis=Depends(get_redis),
+):
+    cache_key = "courses:featured"
+    cached = await redis.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    repo = SQLAlchemyCourseRepository(db)
+    courses = await repo.get_featured()
+    result = [_to_response(c) for c in courses]
+    await redis.setex(cache_key, 60 * 15, json.dumps([r.model_dump() for r in result]))
+    return result
