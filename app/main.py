@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.routers import auth, users, courses, sections, media, attachments, enrollment, payments, reviews, search, notifications, websocket
+from app.api.v1.routers import auth, users, courses, sections, media, attachments, enrollment, payments, reviews, search, notifications, websocket, certificates
 from app.core.websocket_manager import ws_manager
 from app.core.config import settings
 
@@ -32,6 +32,7 @@ app.include_router(payments.router, prefix="/api/v1")
 app.include_router(reviews.router, prefix="/api/v1")
 app.include_router(search.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
+app.include_router(certificates.router, prefix="/api/v1")
 app.include_router(websocket.router)
 
 

@@ -1,1 +1,1 @@
-from app.tasks import tasks, email_tasks  # noqa: F401
+from app.tasks import tasks, email_tasks, certificate_task  # noqa: F401
