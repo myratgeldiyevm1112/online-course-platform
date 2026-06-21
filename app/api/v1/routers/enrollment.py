@@ -69,6 +69,15 @@ async def enroll_free_course(
     service = _get_service(db)
     try:
         enrollment = await service.enroll(current_user.id, cid)
+        # Wire email + notification tasks
+        from app.tasks.email_tasks import send_enrollment_email
+        course = await SQLAlchemyCourseRepository(db).get_by_id(cid)
+        send_enrollment_email.delay(
+            to=current_user.email,
+            name=current_user.email,
+            course_title=course.title if course else "",
+            course_id=str(cid),
+        )
     except ValueError as e:
         raise_400(str(e))
 

@@ -64,6 +64,11 @@
       "key": "category_slug",
       "value": "programming",
       "type": "string"
+    },
+    {
+      "key": "notification_id",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -1294,6 +1299,93 @@
           "request": {
             "method": "GET",
             "url": "{{base_url}}/api/v1/courses/featured"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications?offset=0&limit=20",
+              "query": [
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/notifications/unread-count"
+          }
+        },
+        {
+          "name": "Mark Single as Read",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Set notification_id before calling this"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/notifications/{{notification_id}}/read"
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/notifications/read-all"
+          }
+        },
+        {
+          "name": "WebSocket Notifications (see description)",
+          "request": {
+            "method": "GET",
+            "description": "WebSocket endpoint: ws://127.0.0.1:8000/ws/notifications?token={{access_token}}\nUse Postman WebSocket request or wscat:\n  wscat -c 'ws://127.0.0.1:8000/ws/notifications?token=YOUR_TOKEN'\nSend 'ping' to get 'pong' keepalive.",
+            "url": "{{base_url}}/ws/notifications"
           }
         }
       ]

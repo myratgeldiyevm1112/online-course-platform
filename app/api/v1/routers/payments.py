@@ -82,6 +82,8 @@ async def create_checkout_session(
             metadata={
                 "student_id": str(current_user.id),
                 "course_id": str(course.id),
+                "student_email": current_user.email,
+                "course_title": course.title,
             },
         )
     except stripe.error.StripeError as e:
@@ -134,6 +136,20 @@ async def stripe_webhook(
                         student_id=uuid_lib.UUID(student_id),
                         course_id=uuid_lib.UUID(course_id),
                         payment_intent_id=payment_intent_id,
+                    )
+                    from app.tasks.email_tasks import send_enrollment_email, send_payment_receipt
+                    send_enrollment_email.delay(
+                        to=metadata.get("student_email", ""),
+                        name=metadata.get("student_email", ""),
+                        course_title=metadata.get("course_title", ""),
+                        course_id=metadata.get("course_id", ""),
+                    )
+                    send_payment_receipt.delay(
+                        to=metadata.get("student_email", ""),
+                        name=metadata.get("student_email", ""),
+                        course_title=metadata.get("course_title", ""),
+                        amount=str(session.get("amount_total", 0) / 100),
+                        transaction_id=payment_intent_id,
                     )
                 except Exception:
                     pass
